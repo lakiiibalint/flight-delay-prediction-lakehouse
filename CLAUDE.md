@@ -47,6 +47,13 @@ JIT learning block (1–1.5h) → minimal spike → manual end-to-end run → va
 - `docs/decisions/` — ADRs.
 - `JOURNAL.md` — learning capture, one entry per feature-loop cycle.
 - `STATE.md` — cross-session snapshot (what's built, what's next, open decisions). Update at the end of a working session so a fresh session can pick up without re-deriving context.
+- `docs/diagrams/` — architecture diagrams (draw.io).
+
+## Git workflow
+
+- Branch-based development. No direct commits to `main`.
+- One branch per feature-loop cycle or standalone change, prefixed `feat/`, `fix/`, `docs/`, `chore/` + kebab-case (e.g. `feat/bronze-ingestion`).
+- Merge via PR (`gh pr create`), squash-merge, delete the branch. A feature PR carries its code, ADR, and JOURNAL.md entry together.
 
 ## Finalized stack — don't re-litigate without a new ADR
 
