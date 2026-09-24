@@ -1,0 +1,23 @@
+# secrets / local env
+.env
+
+# raw source data (large, re-downloadable from BTS)
+source_data/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# dbt
+target/
+dbt_packages/
+logs/
+
+# Dagster
+.dagster/
+
+# OS / editor
+.DS_Store
