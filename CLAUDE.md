@@ -54,7 +54,7 @@ MinIO (Bronze/object storage) · ClickHouse (Silver/Gold, analytical warehouse) 
 
 Spark, Databricks, and Trino+Iceberg were deliberately rejected — justifying *not* using Spark is itself part of the thesis argument, don't undo that by defaulting back to it. ClickHouse is "lakehouse-oriented," not a true lakehouse engine (no native Iceberg/Delta table format) — be ready to address this distinction at defense, don't paper over it.
 
-**MinIO packaging note:** the community-edition Docker image is frozen. MinIO stopped publishing images in Oct 2025 and archived the upstream repo in Feb 2026. Pin `minio/minio:RELEASE.2025-09-07T16-13-09Z`. This is fine for a reproducible academic environment — security patching isn't the concern, a pinned reproducible tag is. Don't propose switching to SeaweedFS or building from source over this alone.
+**MinIO packaging note:** the community-edition Docker image is frozen. MinIO stopped publishing images in Oct 2025 and archived the upstream repo in Feb 2026. As of Sep 2026 the official images are no longer pullable either (`minio/minio` removed from Docker Hub, `quay.io/minio/minio` requires auth). Per ADR-0001: use `bitnamilegacy/minio:2025.7.23-debian-12-r5` (digest-pinned in docker-compose.yml) as a stopgap; replace it with an image built from source at `RELEASE.2025-09-07T16-13-09Z` during the hardening pass, before submission. Security patching isn't the concern, a pinned reproducible image is. Don't propose switching object stores (SeaweedFS, Garage, RustFS) — rejected in ADR-0001.
 
 ## ML discipline
 

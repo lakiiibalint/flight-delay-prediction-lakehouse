@@ -1,8 +1,8 @@
 # secrets / local env
 .env
 
-# raw source data (large, re-downloadable from BTS)
-source_data/
+# local landing zone: BTS CSVs as downloaded, pre-Bronze (large, re-downloadable)
+data/
 
 # Python
 __pycache__/
