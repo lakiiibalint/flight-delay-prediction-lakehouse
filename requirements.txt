@@ -1,0 +1,3 @@
+# Skeleton-phase dependencies (single root venv). Split per component after the thin slice works.
+pyarrow==25.0.1
+boto3==1.43.104
