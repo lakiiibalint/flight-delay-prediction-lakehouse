@@ -1,0 +1,12 @@
+<clickhouse>
+    <!-- Customising `default` here can make the image entrypoint skip its own default-user setup,
+         so the password (from CLICKHOUSE_PASSWORD in .env) is set here too; replace="replace" overrides
+         the entrypoint's password when it does run.
+         named_collection_control: lets default use s3(minio_bronze, ...); off by default for XML-defined users. -->
+    <users>
+        <default>
+            <password from_env="CLICKHOUSE_PASSWORD" replace="replace"/>
+            <named_collection_control>1</named_collection_control>
+        </default>
+    </users>
+</clickhouse>
