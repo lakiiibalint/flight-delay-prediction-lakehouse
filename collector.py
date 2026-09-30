@@ -7,15 +7,17 @@ import pyarrow as pa
 import csv as std_csv
 
 source = "data/landing/bts_ontime/bts_ontime_2026_07.csv"
-output = "data/bronze_staging/bts_ontime_2026_07.parquet"
+output = "data/bronze_local/bts_ontime_2026_07.parquet"
 object_key = "bts_ontime/year=2026/month=07/bts_ontime_2026_07.parquet"
 
+# Remove the unwanted last row from the data
 header = next(std_csv.reader(open(source)))
 header = [column for column in header if column != '']
 
-opts = csv.ConvertOptions(column_types = {column: pa.string() for column in header},  include_columns=header)
 
-table = csv.read_csv(source, convert_options=opts)
+convert_options = csv.ConvertOptions(column_types = {column: pa.string() for column in header},  include_columns=header)
+
+table = csv.read_csv(source, convert_options=convert_options)
 
 os.makedirs(os.path.dirname(output), exist_ok=True)
 parquet.write_table(table, output)
