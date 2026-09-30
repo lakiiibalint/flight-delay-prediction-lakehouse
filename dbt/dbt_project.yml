@@ -1,0 +1,17 @@
+name: flight_delays
+version: "0.1.0"
+config-version: 2
+profile: flight_delays
+
+model-paths: ["models"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  flight_delays:
+    silver:
+      +tags: ["silver"]
+      +materialized: table
+    gold:
+      +tags: ["gold"]
+      +materialized: table

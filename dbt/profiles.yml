@@ -1,0 +1,18 @@
+# dbt finds this file because it is in the directory dbt is run from (dbt/).
+flight_delays:
+  target: dev
+  outputs:
+    dev:
+      type: clickhouse
+      driver: http
+      host: localhost
+      port: 8123
+      user: "{{ env_var('CLICKHOUSE_USER') }}"
+      password: "{{ env_var('CLICKHOUSE_PASSWORD') }}"
+      schema: "{{ env_var('CLICKHOUSE_DB') }}"   # in ClickHouse a dbt schema is a database
+      secure: false
+      threads: 1
+      custom_settings:
+        # dbt-clickhouse builds tables as CREATE + INSERT ... SELECT. With the default (2), ClickHouse
+        # takes the s3() schema from the insert target's columns instead of the Parquet file.
+        use_structure_from_insertion_table_in_table_functions: 0

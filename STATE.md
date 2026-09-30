@@ -12,7 +12,7 @@ Last updated: 2026-09-29
 - Diagrams (`docs/diagrams/`): `01-high-level-architecture.drawio`, `02-dataflow.drawio` (Bronze ingestion flow).
 - `JOURNAL.md` — first entry: Bronze ingestion.
 - One BTS month on disk, not in git (`data/` gitignored): `data/landing/bts_ontime/bts_ontime_2026_07.csv` (~286 MB, already unzipped) + readme.html.
-- Bronze ingestion: `collector.py` (hand-written, hardcoded, run manually). CSV → Parquet (`data/bronze_staging/`) → MinIO bucket `bronze`, key `bts_ontime/year=2026/month=07/bts_ontime_2026_07.parquet`. Verified: 631,970 rows, 109 columns, all `string`, trailing empty column dropped, empty fields = `""`.
+- Bronze ingestion: `collector.py` (hand-written, hardcoded, run manually). CSV → Parquet (`data/bronze_local/`) → MinIO bucket `bronze`, key `bts_ontime/year=2026/month=07/bts_ontime_2026_07.parquet`. Verified: 631,970 rows, 109 columns, all `string`, trailing empty column dropped, empty fields = `""`.
 - Python env: root `.venv` from `requirements.txt` (pyarrow, boto3). Run: `source .venv/bin/activate; set -a; source .env; set +a; python collector.py`.
 
 ## Next

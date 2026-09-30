@@ -1,3 +1,5 @@
 # Skeleton-phase dependencies (single root venv). Split per component after the thin slice works.
 pyarrow==25.0.1
 boto3==1.43.104
+dbt-core==1.12.5
+dbt-clickhouse==1.10.3

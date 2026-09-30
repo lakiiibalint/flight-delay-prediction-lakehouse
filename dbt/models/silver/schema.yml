@@ -1,0 +1,43 @@
+models:
+  - name: staging_flights
+    columns:
+
+      - name: Is_Flight_Cancelled
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+
+      - name: Departure_Delay
+        data_tests:
+          - not_null:
+              config:
+                where: "Is_Flight_Cancelled = 0"
+
+      - name: Destination_Airport
+        data_tests:
+          - not_null
+      
+      - name: Origin_Airport
+        data_tests:
+          - not_null
+            
+      - name: Reporting_Airline
+        data_tests:
+          - not_null
+
+      - name: Flight_Date
+        data_tests:
+          - not_null
+      
+      
+      
+      
+            
+      
+    
+  
+
+

@@ -14,6 +14,7 @@ venv/
 # dbt
 target/
 dbt_packages/
+.user.yml
 logs/
 
 # Dagster
