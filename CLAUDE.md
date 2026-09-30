@@ -31,7 +31,7 @@ Before running code at genuinely uncertain points, Bálint writes a one-line pre
 
 ## Per-feature loop
 
-JIT learning block (1–1.5h) → minimal spike → manual end-to-end run → validate output → ADR (if a real decision was made) → JOURNAL.md entry → later hardening pass.
+JIT learning block (1–1.5h) → minimal spike → manual end-to-end run → validate output → ADR (if a real decision was made) → JOURNAL.md entry (optional) → later hardening pass.
 
 ## ADRs
 
@@ -45,7 +45,7 @@ JIT learning block (1–1.5h) → minimal spike → manual end-to-end run → va
 - Monorepo, one repo for the whole platform.
 - Per-component `src/`, independent `pyproject.toml` and `Dockerfile` per component — once past skeleton phase, not now.
 - `docs/decisions/` — ADRs.
-- `JOURNAL.md` — learning capture, one entry per feature-loop cycle.
+- `JOURNAL.md` — learning capture, optional; entries written when there is something worth capturing, not per cycle.
 - `STATE.md` — cross-session snapshot (what's built, what's next, open decisions). Update at the end of a working session so a fresh session can pick up without re-deriving context.
 - `docs/diagrams/` — architecture diagrams (draw.io).
 
@@ -53,7 +53,7 @@ JIT learning block (1–1.5h) → minimal spike → manual end-to-end run → va
 
 - Branch-based development. No direct commits to `main`.
 - One branch per feature-loop cycle or standalone change, prefixed `feat/`, `fix/`, `docs/`, `chore/` + kebab-case (e.g. `feat/bronze-ingestion`).
-- Merge via PR (`gh pr create`), squash-merge, delete the branch. A feature PR carries its code, ADR, and JOURNAL.md entry together.
+- Merge via PR (`gh pr create`), squash-merge, delete the branch. A feature PR carries its code and ADR together (JOURNAL.md entry optional).
 
 ## Finalized stack — don't re-litigate without a new ADR
 
