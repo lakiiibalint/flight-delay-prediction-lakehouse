@@ -32,6 +32,28 @@ models:
         data_tests:
           - not_null
       
+      - name: Flight_Number
+        data_tests:
+          - not_null
+          
+      - name: Scheduled_Departure_Time
+        data_tests:
+          - not_null
+
+models:
+  - name: cleaned_flights
+    columns:
+
+      - name: Hour_Of_Departure
+        data_tests:
+          - not_null
+
+      
+
+
+
+          
+      
       
       
       
