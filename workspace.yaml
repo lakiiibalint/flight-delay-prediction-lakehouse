@@ -1,0 +1,5 @@
+# `dagster dev` picks this file up from the directory it is run from (repo root).
+load_from:
+  - python_module:
+      module_name: orchestration.definitions
+      working_directory: .   # repo root on sys.path, so `orchestration` is importable

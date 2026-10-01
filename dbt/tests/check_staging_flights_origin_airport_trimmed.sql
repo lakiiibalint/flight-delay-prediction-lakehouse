@@ -1,3 +1,4 @@
+{{config (severity = 'warn')}}
 SELECT
     TRIM("Origin_Airport"),
     "Origin_Airport"
