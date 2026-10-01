@@ -1,8 +1,6 @@
 from pyarrow import csv,parquet
-import logging
 import boto3
 import os
-from botocore.exceptions import ClientError
 import pyarrow as pa
 import csv as std_csv
 
@@ -23,7 +21,7 @@ table = csv.read_csv(source, convert_options=convert_options)
 os.makedirs(os.path.dirname(output), exist_ok=True)
 parquet.write_table(table, output)
 
-def upload_file(file_name, bucket, object_name=None):
+def upload_file(file_name, bucket, object_name=None) -> None:
     """Upload a file to an S3 bucket
 
     :param file_name: File to upload
@@ -43,14 +41,11 @@ def upload_file(file_name, bucket, object_name=None):
         aws_access_key_id = os.environ["MINIO_ROOT_USER"],
         aws_secret_access_key = os.environ["MINIO_ROOT_PASSWORD"]
     )
-    try:
-        response = s3_client.upload_file(file_name, bucket, object_name)
-    except ClientError as e:
-        logging.error(e)
-        return False
-    return True
+    
+    s3_client.upload_file(file_name, bucket, object_name)
+   
 
-print(upload_file(output, "bronze", object_key))
+upload_file(output, "bronze", object_key)
 
 
 

@@ -13,25 +13,13 @@ def run_collector(context):
         raise Exception("python collector run failed")
 
 @asset(deps = ["run_collector"])
-def dbt_run(context):
+def dbt_build(context):
     result = subprocess.run(
-        ["dbt", "run"],
+        ["dbt", "build"],
         cwd = "dbt",
         capture_output= True, text= True
     )
     context.log.info(result.stdout)
     if result.returncode != 0:
         raise Exception ("dbt build failed")
-
-@asset(deps = ["dbt_run"])
-def dbt_test(context):
-    result = subprocess.run(
-        ["dbt","test"],
-        cwd = "dbt",
-        capture_output=True, text= True
-    )
-    context.log.info(result.stdout)
-    if result.returncode != 0 :
-        raise Exception ("dbt tests failed")
-
 
