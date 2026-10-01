@@ -19,6 +19,7 @@ logs/
 
 # Dagster
 .dagster/
+.tmp_dagster_home_*/
 
 # OS / editor
 .DS_Store

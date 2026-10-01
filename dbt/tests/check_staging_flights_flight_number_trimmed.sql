@@ -1,3 +1,5 @@
+{{config (severity = 'warn')}}
+
 SELECT 
     TRIM("Flight_Number"),
     "Flight_Number"

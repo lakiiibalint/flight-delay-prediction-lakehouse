@@ -11,6 +11,7 @@ output = "data/bronze_local/bts_ontime_2026_07.parquet"
 object_key = "bts_ontime/year=2026/month=07/bts_ontime_2026_07.parquet"
 
 # Remove the unwanted last row from the data
+# TOdo make def convert_to_parquet function
 header = next(std_csv.reader(open(source)))
 header = [column for column in header if column != '']
 
