@@ -1,0 +1,19 @@
+models:
+  - name: features_delay
+    columns:
+
+      - name: Is_Dep_Delay_Greater_Than_15
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+
+      - name: Departure_Delay
+        data_tests:
+          - not_null
+
+      - name: Hour_Of_Departure
+        data_tests:
+          - not_null

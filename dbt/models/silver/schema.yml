@@ -19,11 +19,11 @@ models:
       - name: Destination_Airport
         data_tests:
           - not_null
-      
+
       - name: Origin_Airport
         data_tests:
           - not_null
-            
+
       - name: Reporting_Airline
         data_tests:
           - not_null
@@ -31,11 +31,11 @@ models:
       - name: Flight_Date
         data_tests:
           - not_null
-      
+
       - name: Flight_Number
         data_tests:
           - not_null
-          
+
       - name: Scheduled_Departure_Time
         data_tests:
           - not_null
@@ -46,19 +46,3 @@ models:
       - name: Hour_Of_Departure
         data_tests:
           - not_null
-
-      
-
-
-
-          
-      
-      
-      
-      
-            
-      
-    
-  
-
-
