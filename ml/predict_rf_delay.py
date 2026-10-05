@@ -21,6 +21,7 @@ def build_results (test, proba):
 
 
 def write_predictions_into_table(results): 
+
     client = clickhouse_connect.get_client(
             host = "localhost",
             port = 8123,
@@ -28,6 +29,22 @@ def write_predictions_into_table(results):
             password = os.environ["CLICKHOUSE_PASSWORD"],
             database = os.environ["CLICKHOUSE_DB"]
         )
+
+    client.command("""
+    CREATE TABLE IF NOT EXISTS delay_predictions (
+        Flight_Number                String,
+        Flight_Date                  Date,
+        Reporting_Airline            String,
+        Origin_Airport               String,
+        Destination_Airport          String,
+        Delay_Probability            Float64,
+        Is_Dep_Delay_Greater_Than_15 UInt8,
+        Model_Name                   String,
+        Scored_At                    DateTime
+    )
+    ENGINE = MergeTree
+    ORDER BY (Flight_Date, Reporting_Airline, Flight_Number)
+""")
 
     client.command("TRUNCATE TABLE delay_predictions")
     client.insert_df("delay_predictions", results)
