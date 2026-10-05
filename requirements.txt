@@ -5,3 +5,7 @@ dbt-core==1.12.5
 dbt-clickhouse==1.10.3
 dagster==1.13.24
 dagster-webserver==1.13.24
+pandas==3.0.6
+scikit-learn==1.9.1
+clickhouse-connect==1.9.0
+ipykernel==7.4.0
