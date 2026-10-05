@@ -34,3 +34,15 @@ def run_rf_delay_train(context):
     if result.returncode != 0 :
         context.log.error(result.stderr)
         raise Exception ("train_rf_delay.py run failed")
+
+@asset (deps = ["run_rf_delay_train"])
+def run_rf_delay_predict(context):
+    result = subprocess.run(
+        ["python", "predict_rf_delay.py"],
+        cwd = "ml",
+        capture_output=True, text=True
+                            )
+    context.log.info(result.stdout)
+    if result.returncode != 0 :
+        context.log.error(result.stderr)
+        raise Exception ("run_rf_delay_predict.py run failed")
