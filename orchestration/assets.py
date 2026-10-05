@@ -23,3 +23,14 @@ def dbt_build(context):
     if result.returncode != 0:
         raise Exception ("dbt build failed")
 
+@asset (deps = ["dbt_build"])
+def run_rf_delay_train(context):
+    result = subprocess.run(
+        ["python", "train_rf_delay.py"],
+        cwd = "ml",
+        capture_output= True, text = True
+    )
+    context.log.info(result.stdout)
+    if result.returncode != 0 :
+        context.log.error(result.stderr)
+        raise Exception ("train_rf_delay.py run failed")
