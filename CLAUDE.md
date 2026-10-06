@@ -15,7 +15,7 @@ Bachelor's thesis: a containerized, lakehouse-oriented data platform predicting 
 
 ## Build philosophy
 
-- Skeleton-first: the dumbest possible end-to-end slice before deepening any layer. Current target: one file → MinIO → one dbt model → one Dagster asset → one number in Power BI, all via docker-compose. Hardcode aggressively at this stage.
+- Skeleton-first: the dumbest possible end-to-end slice before deepening any layer. Skeleton reached 2026-10-07: one file → MinIO → dbt → Dagster → model → numbers in Power BI. MinIO and ClickHouse run in docker-compose; Dagster, dbt and ML run from the host `.venv` — accepted for the skeleton, containerize in the hardening pass.
 - Manual run before orchestration: validate a pipeline stage by hand before wiring it into Dagster.
 - Avoid over-engineering upfront. Don't scaffold the full per-component structure (independent Dockerfile/pyproject.toml per service) until the thin slice works end to end.
 - Don't introduce tooling, abstractions, or structure that isn't earning its place yet.
@@ -31,13 +31,13 @@ Before running code at genuinely uncertain points, Bálint writes a one-line pre
 
 ## Per-feature loop
 
-JIT learning block (1–1.5h) → minimal spike → manual end-to-end run → validate output → ADR (if a real decision was made) → JOURNAL.md entry (optional) → later hardening pass.
+JIT learning block (1–1.5h) → minimal spike → manual end-to-end run → validate output → ADR (optional) → JOURNAL.md entry (optional) → later hardening pass.
 
 ## ADRs
 
 - MADR-style, single-file, via the `adr-author` skill.
 - Hard rules for every ADR: explicit decision drivers, pros/cons for every option considered, stated rejection rationale for every alternative.
-- Write immediately after the decision, while the reasoning is fresh — not batched at phase end.
+- Optional during the build. Written when the thesis text is being written, not per decision — don't flag a missing ADR as a gap; note the decision in STATE.md follow-ups instead.
 - Location: `docs/decisions/`.
 
 ## Repo layout
@@ -53,7 +53,7 @@ JIT learning block (1–1.5h) → minimal spike → manual end-to-end run → va
 
 - Branch-based development. No direct commits to `main`.
 - One branch per feature-loop cycle or standalone change, prefixed `feat/`, `fix/`, `docs/`, `chore/` + kebab-case (e.g. `feat/bronze-ingestion`).
-- Merge via PR (`gh pr create`), squash-merge, delete the branch. A feature PR carries its code and ADR together (JOURNAL.md entry optional).
+- Merge via PR (`gh pr create`), squash-merge, delete the branch. ADR and JOURNAL.md entry optional per PR.
 
 ## Finalized stack — don't re-litigate without a new ADR
 
