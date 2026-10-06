@@ -1,27 +1,35 @@
 # STATE
 
-Last updated: 2026-09-29
+Last updated: 2026-10-07
 
 ## Built
 - Repo on GitHub (public): lakiiibalint/flight-delay-prediction-lakehouse; `gh` authenticated, git uses gh credentials.
-- `docker-compose.yml`: MinIO + ClickHouse 24.8. Verified running: ClickHouse `localhost:8123` → `Ok.`, MinIO console `localhost:9001`, S3 API `localhost:9000`.
-- MinIO image: `bitnamilegacy/minio:2025.7.23-debian-12-r5`, digest-pinned (ADR-0001). Official `minio/minio` image no longer pullable.
+- `docker-compose.yml`: MinIO + ClickHouse 24.8 (ClickHouse `localhost:8123`, MinIO console `localhost:9001`, S3 API `localhost:9000`). MinIO image `bitnamilegacy/minio:2025.7.23-debian-12-r5`, digest-pinned (ADR-0001).
 - `.env` (local, gitignored) copied from `.env.example`.
-- `docs/decisions/0001-minio-image-sourcing.md` — ADR-0001.
-- `docs/decisions/0002-bronze-schema-all-strings.md` — ADR-0002: Bronze all strings, empty fields stored as `""`, typing in Silver.
-- Diagrams (`docs/diagrams/`): `01-high-level-architecture.drawio`, `02-dataflow.drawio` (Bronze ingestion flow).
-- `JOURNAL.md` — first entry: Bronze ingestion.
-- One BTS month on disk, not in git (`data/` gitignored): `data/landing/bts_ontime/bts_ontime_2026_07.csv` (~286 MB, already unzipped) + readme.html.
-- Bronze ingestion: `collector.py` (hand-written, hardcoded, run manually). CSV → Parquet (`data/bronze_local/`) → MinIO bucket `bronze`, key `bts_ontime/year=2026/month=07/bts_ontime_2026_07.parquet`. Verified: 631,970 rows, 109 columns, all `string`, trailing empty column dropped, empty fields = `""`.
-- Python env: root `.venv` from `requirements.txt` (pyarrow, boto3). Run: `source .venv/bin/activate; set -a; source .env; set +a; python collector.py`.
+- ADRs (`docs/decisions/`): 0001 MinIO image sourcing, 0002 Bronze all strings, 0003 ClickHouse→MinIO via named collection, 0004 Silver dbt tests per layer.
+- Diagrams (`docs/diagrams/`): `01-high-level-architecture.drawio`, `02-dataflow.drawio` (Bronze → Silver → Gold).
+- Data: one BTS month (July 2026), `data/` gitignored.
+- Bronze: `collector.py` — CSV → Parquet → MinIO bucket `bronze`, key `bts_ontime/year=2026/month=07/bts_ontime_2026_07.parquet` (631,970 rows, 109 string columns).
+- Silver (dbt): `staging_flights` (view), `cleaned_flights` (table), with tests.
+- Gold (dbt): `features_delay` (table), with tests. Features: `Reporting_Airline`, `Origin_Airport`, `Destination_Airport`, `Hour_Of_Departure`; label `Is_Dep_Delay_Greater_Than_15`.
+- ML (`ml/`): `train_rf_delay.py` (RandomForest, split by `Flight_Date`, last 20% of dates = test, model saved to `ml/artifacts/`), `predict_rf_delay.py` (scores the test split → ClickHouse `delay_predictions`; writes `pr_auc` and `baseline_pr_auc` → `model_metrics`).
+- Dagster (`orchestration/`): `run_collector` → `dbt_build` → `run_rf_delay_train` → `run_rf_delay_predict`, each a subprocess call. Runs from the host `.venv`, not from docker-compose.
+- Power BI Desktop report on ClickHouse, two pages: `features_delay` (delay rate 29.34%, 615K flights, by hour/airline/airport/date) and `Model (jul 25-31)` (140K scored flights, predicted 29.62% vs. actual 28.57%, calibration by 0.05 bucket, PR AUC 0.47 vs. baseline 0.29, lift 1.63). The `.pbix` is not in the repo.
+
+Thin slice works end to end: one file → MinIO → dbt → Dagster → model → numbers in Power BI.
 
 ## Next
-- First dbt model: read the Bronze Parquet from MinIO via ClickHouse `s3()`; Silver casts must handle `''` (`nullIf` / `...OrNull`).
+- Hardening pass / deepening layers; backfill to 12 months.
 
 ## Open decisions
-- (none open for Bronze)
+- Whether Dagster + dbt + ML move into docker-compose now (CLAUDE.md skeleton target says "all via docker-compose"; today only MinIO and ClickHouse are containerized).
+- Where the `.pbix` lives (repo vs. outside).
 
 ## Follow-ups (not now)
+- ADRs not yet written for decisions already made: Dagster without `dagster-dbt` (subprocess assets), PR AUC as the model metric, 80/20 date split.
+- Calibration: predicted probabilities span ~0.20–0.50 while actual rates per bucket span ~12–60% — the model is under-dispersed.
+- `predict_rf_delay.py`: `build_results` hardcodes `"rf_v1"` instead of `MODEL_NAME`; ClickHouse host hardcoded to `localhost`.
+- `ml/train_rf_delay.ipynb` is untracked (exploratory duplicate of `train_rf_delay.py`, 171 KB with outputs).
 - CLAUDE.md says BTS has 111 fields; the July 2026 CSV header has 109 real fields (+ trailing empty). Check against the BTS field list/readme.
 - Column-set check at ingestion or in Silver to catch upstream schema changes (ADR-0002 consequence).
 - Build MinIO from source at `RELEASE.2025-09-07T16-13-09Z` before submission; superseding ADR.
