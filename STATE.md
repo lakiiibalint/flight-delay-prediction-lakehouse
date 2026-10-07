@@ -12,7 +12,7 @@ Last updated: 2026-10-07
 - Bronze: `collector.py` — CSV → Parquet → MinIO bucket `bronze`, key `bts_ontime/year=2026/month=07/bts_ontime_2026_07.parquet` (631,970 rows, 109 string columns).
 - Silver (dbt): `staging_flights` (view), `cleaned_flights` (table), with tests.
 - Gold (dbt): `features_delay` (table), with tests. Features: `Reporting_Airline`, `Origin_Airport`, `Destination_Airport`, `Hour_Of_Departure`; label `Is_Dep_Delay_Greater_Than_15`.
-- ML (`ml/`): `train_rf_delay.py` (RandomForest, split by `Flight_Date`, last 20% of dates = test, model saved to `ml/artifacts/`), `predict_rf_delay.py` (scores the test split → ClickHouse `delay_predictions`; writes `pr_auc` and `baseline_pr_auc` → `model_metrics`).
+- ML (`ml/`): `train_rf_delay.py` (RandomForest, split by `Flight_Date`, last 20% of dates = test, model saved to `ml/artifacts/`), `predict_rf_delay.py` (scores the test split → ClickHouse `predictions_delay`; writes `pr_auc` and `baseline_pr_auc` → `model_metrics`).
 - Dagster (`orchestration/`): `run_collector` → `dbt_build` → `run_rf_delay_train` → `run_rf_delay_predict`, each a subprocess call. Runs from the host `.venv`, not from docker-compose.
 - Power BI Desktop report on ClickHouse, two pages: `features_delay` (delay rate 29.34%, 615K flights, by hour/airline/airport/date) and `Model (jul 25-31)` (140K scored flights, predicted 29.62% vs. actual 28.57%, calibration by 0.05 bucket, PR AUC 0.47 vs. baseline 0.29, lift 1.63). File: `powerBI/flight_pred.pbix`.
 

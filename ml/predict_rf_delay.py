@@ -34,7 +34,7 @@ def write_predictions_into_table(results):
         )
 
     client.command("""
-    CREATE TABLE IF NOT EXISTS delay_predictions (
+    CREATE TABLE IF NOT EXISTS predictions_delay (
         Flight_Number                String,
         Flight_Date                  Date,
         Reporting_Airline            String,
@@ -49,8 +49,8 @@ def write_predictions_into_table(results):
     ORDER BY (Flight_Date, Reporting_Airline, Flight_Number)
 """)
 
-    client.command("TRUNCATE TABLE delay_predictions")
-    client.insert_df("delay_predictions", results)
+    client.command("TRUNCATE TABLE predictions_delay")
+    client.insert_df("predictions_delay", results)
 
 def write_metrics_into_table(model_name, baseline_probability, pr_auc):
     client = clickhouse_connect.get_client(
@@ -95,13 +95,12 @@ def main():
     y_test = test[TARGET_LABEL]
 
     probability_predict = pipeline.predict_proba(X_test)[:,1]
-
     results = build_results(test, probability_predict)
 
     write_predictions_into_table(results)
+    print(f"{len(X_test)} row written into predictions_delay table")
 
-    print(f"{len(X_test)} row written into delay_predictions table")
-
+    #Model metrics
     baseline = y_test.mean()
     pr_auc = average_precision_score(y_test, probability_predict)
 
