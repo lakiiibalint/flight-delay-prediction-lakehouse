@@ -10,7 +10,7 @@ Last updated: 2026-10-07
 - Diagrams (`docs/diagrams/`): `01-high-level-architecture.drawio`, `02-dataflow.drawio` (Bronze → Silver → Gold).
 - Data: one BTS month (July 2026), `data/` gitignored.
 - Bronze: `collector.py` — CSV → Parquet → MinIO bucket `bronze`, key `bts_ontime/year=2026/month=07/bts_ontime_2026_07.parquet` (631,970 rows, 109 string columns).
-- Silver (dbt): `staging_flights` (view), `cleaned_flights` (table), with tests.
+- Silver (dbt): `staging_flights` (table), `cleaned_flights` (table), with tests.
 - Gold (dbt): `features_delay` (table), with tests. Features: `Reporting_Airline`, `Origin_Airport`, `Destination_Airport`, `Hour_Of_Departure`; label `Is_Dep_Delay_Greater_Than_15`.
 - ML (`ml/`): `train_rf_delay.py` (RandomForest, split by `Flight_Date`, last 20% of dates = test, model saved to `ml/artifacts/`), `predict_rf_delay.py` (scores the test split → ClickHouse `predictions_delay`; writes `pr_auc` and `baseline_pr_auc` → `model_metrics`).
 - Dagster (`orchestration/`): `run_collector` → `dbt_build` → `run_rf_delay_train` → `run_rf_delay_predict`, each a subprocess call. Runs from the host `.venv`, not from docker-compose.
