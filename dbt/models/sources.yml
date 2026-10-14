@@ -1,0 +1,8 @@
+sources:
+  - name: bronze
+    schema: flight_delays
+    tables:
+      - name: raw_flights
+        meta:
+          dagster:
+            asset_key: ["run_collector"]

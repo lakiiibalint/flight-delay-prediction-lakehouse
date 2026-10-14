@@ -1,5 +1,5 @@
 WITH raw_flights AS(
-    SELECT * FROM s3(minio_bronze, filename='bts_ontime/year=2026/month=07/bts_ontime_2026_07.parquet')
+    SELECT * FROM {{ source('bronze', 'raw_flights') }}
 )
 
 SELECT 
