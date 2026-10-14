@@ -46,3 +46,8 @@ models:
       - name: Hour_Of_Departure
         data_tests:
           - not_null
+
+      - name: Flight_Id
+        data_tests:
+          - not_null
+          - unique
