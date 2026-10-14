@@ -1,4 +1,5 @@
 SELECT 
+    "Flight_Id",
     "Flight_Number",
     "Flight_Date",
     "Reporting_Airline",

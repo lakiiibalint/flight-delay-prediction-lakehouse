@@ -14,7 +14,7 @@ MODEL_NAME = "rf_v1"
 
 def build_results (test, probability_predict):
 
-    results = test[["Flight_Number", "Flight_Date", "Reporting_Airline", "Origin_Airport", "Destination_Airport"]].copy()
+    results = test[["Flight_Id", "Flight_Number", "Flight_Date", "Reporting_Airline", "Origin_Airport", "Destination_Airport"]].copy()
     results["Delay_Probability"] = probability_predict
     results["Is_Dep_Delay_Greater_Than_15"] = test[TARGET_LABEL]
     results["Model_Name"] = "rf_v1"
@@ -35,6 +35,7 @@ def write_predictions_into_table(results):
 
     client.command("""
     CREATE TABLE IF NOT EXISTS predictions_delay (
+        Flight_Id                    String,
         Flight_Number                String,
         Flight_Date                  Date,
         Reporting_Airline            String,

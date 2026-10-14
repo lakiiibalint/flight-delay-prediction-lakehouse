@@ -1,4 +1,8 @@
 SELECT 
+    {{ dbt_utils.generate_surrogate_key([
+    'Flight_Date', 'Reporting_Airline', 'Flight_Number',
+    'Origin_Airport', 'Destination_Airport'
+    ]) }} AS Flight_Id,
     Flight_Number,
     Flight_Date,
     Reporting_Airline,
