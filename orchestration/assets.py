@@ -1,5 +1,13 @@
 import subprocess
+from pathlib import Path
 from dagster import asset
+from dagster import AssetExecutionContext
+from dagster_dbt import DbtCliResource, DbtProject, dbt_assets
+
+
+DBT_PROJECT_DIR = Path(__file__).parent.parent / "dbt"
+dbt_project = DbtProject(project_dir=DBT_PROJECT_DIR)
+dbt_resource = DbtCliResource(project_dir=dbt_project)
 
 @asset
 def run_collector(context):
@@ -11,19 +19,13 @@ def run_collector(context):
     if result.returncode != 0:
         context.log.error(result.stderr)
         raise Exception("python collector run failed")
+    
+@dbt_assets(manifest=dbt_project.manifest_path)
+def dbt_models (context: AssetExecutionContext, dbt: DbtCliResource):
+    yield from dbt.cli(["build"], context=context).stream()
 
-@asset(deps = ["run_collector"])
-def dbt_build(context):
-    result = subprocess.run(
-        ["dbt", "build"],
-        cwd = "dbt",
-        capture_output= True, text= True
-    )
-    context.log.info(result.stdout)
-    if result.returncode != 0:
-        raise Exception ("dbt build failed")
 
-@asset (deps = ["dbt_build"])
+@asset (deps = ["features_delay"])
 def run_rf_delay_train(context):
     result = subprocess.run(
         ["python", "train_rf_delay.py"],

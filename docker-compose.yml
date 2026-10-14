@@ -38,6 +38,8 @@ services:
       - clickhouse-data:/var/lib/clickhouse
       - ./clickhouse/config.d/named_collections.xml:/etc/clickhouse-server/config.d/named_collections.xml:ro
       - ./clickhouse/users.d/default_named_collections.xml:/etc/clickhouse-server/users.d/default_named_collections.xml:ro
+      # Bronze DDL, run only when clickhouse-data is empty (first start)
+      - ./clickhouse/initdb.d:/docker-entrypoint-initdb.d:ro
 
 volumes:
   minio-data:
