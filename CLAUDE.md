@@ -29,6 +29,15 @@ Before running code at genuinely uncertain points, Bálint writes a one-line pre
 - Unfamiliar syntax/libraries: covered by a short JIT learning block, not predicted.
 - A breakpoint (predicted ≠ actual) gets logged as expected vs. actual — it's a data point for him, not something to smooth over.
 
+## Knowledge gaps — when to ask vs. explain
+
+When Bálint doesn't know something, pick the mode by what kind of gap it is:
+
+- **Derivable by reasoning** (e.g. why bin a feature, what a leaf ratio means): he guesses first in one sentence; Claude Code refines with one question or a counterexample; full explanation only if that doesn't land.
+- **Tool behavior, syntax, error messages** (e.g. `deps` expects an asset key, not a function name): explain directly — this can't be reasoned out, questioning only costs time. Then he restates it in his own words.
+- "Too complicated" / "simpler" from him means switch from questions to a concrete example.
+- Mechanics he just wants done (git, installs, scaffolding): no quizzing.
+
 ## Per-feature loop
 
 JIT learning block (1–1.5h) → minimal spike → manual end-to-end run → validate output → ADR (optional) → JOURNAL.md entry (optional) → later hardening pass.
