@@ -23,7 +23,7 @@ def build_results (test, probability_predict):
     return results
 
 
-def write_predictions_into_table(results): 
+def write_predictions_into_table(model_name, results): 
 
     client = clickhouse_connect.get_client(
             host = "localhost",
@@ -50,7 +50,10 @@ def write_predictions_into_table(results):
     ORDER BY (Flight_Date, Reporting_Airline, Flight_Number)
 """)
 
-    client.command("TRUNCATE TABLE predictions_delay")
+    client.command(
+    "ALTER TABLE predictions_delay DELETE WHERE Model_Name = {model:String} SETTINGS mutations_sync = 1",
+    parameters={"model": model_name},
+)
     client.insert_df("predictions_delay", results)
 
 def write_metrics_into_table(model_name, baseline_probability, pr_auc):
@@ -98,7 +101,7 @@ def main():
     probability_predict = pipeline.predict_proba(X_test)[:,1]
     results = build_results(test, probability_predict)
 
-    write_predictions_into_table(results)
+    write_predictions_into_table(MODEL_NAME, results)
     print(f"{len(X_test)} row written into predictions_delay table")
 
     #Model metrics
