@@ -42,6 +42,7 @@ def convert_to_parquet(csv_path, parquet_path):
 
 
 def download_zip(year, month, zip_path):
+    os.makedirs(os.path.dirname(zip_path), exist_ok=True)
     with requests.get(f"https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_{year}_{month}.zip", stream=True, timeout=(10, 60)) as response:
      response.raise_for_status()
      with open(zip_path, "wb") as file:
