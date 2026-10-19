@@ -5,6 +5,7 @@ from sklearn.metrics import average_precision_score
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.pipeline import Pipeline
+from sklearn.dummy import DummyClassifier
 import joblib
 from pathlib import Path
 import pandas as pd
@@ -14,10 +15,20 @@ import time
 
 FEATURES = ["Reporting_Airline", "Origin_Airport", "Destination_Airport", "Hour_Of_Departure"] 
 TARGET_LABEL = "Is_Dep_Delay_Greater_Than_15"
-PARAMS = {"random_state" : 42, "n_jobs" :-1, "n_estimators" :500, "max_depth" : 15, "min_samples_leaf" : 50}
+PARAMS = {"random_state" : 42, "n_jobs" :-1, "n_estimators" :100, "max_depth" : 15, "min_samples_leaf" : 50}
 CATEGORICAL = ["Reporting_Airline", "Origin_Airport", "Destination_Airport"]
+# Constants for running a model
 ARTIFACTS_DIR = Path(__file__).parent / "artifacts"
-MODEL_NAME = 'rf_delay_v1'
+TRAIN_END = "2024-07-31"
+VAL_START, VAL_END   = "2024-08-01", "2025-07-31"
+TEST_START, TEST_END = "2025-08-01", "2026-07-31"
+YEARS = 1
+VERSION = 1
+STEP = "baseline"
+SPLIT = "validation"
+MODEL_NAME = f"rf_delay_y{YEARS}_v{VERSION}"
+FRACTIONS = {"12_5": 0.125, "25": 0.25, "50": 0.5, "100": 1.0}
+#RandomForestClassifier(**PARAMS)
 
 def get_client():
      client = clickhouse_connect.get_client(
@@ -29,6 +40,19 @@ def get_client():
         )
 
      return client
+    
+def changed_params(model):
+    defaults = type(model)().get_params()
+    return {k: v for k, v in model.get_params().items() if v != defaults[k]}
+
+def train_start_for(years):
+    train_end = pd.Timestamp(TRAIN_END)
+    next_day = train_end + pd.Timedelta(days=1)
+    return next_day - pd.DateOffset(years=years)
+
+def select_period(df, start, end):
+    in_period = (df["Flight_Date"] >= start) & (df["Flight_Date"] <= end)
+    return df[in_period]
 
 def load_data(): 
     client = get_client()
@@ -37,28 +61,17 @@ def load_data():
 
     return df
 
-
-def split_by_date(df, flight_date_col): 
-    dates = sorted(list(df[flight_date_col].unique()))
-
-    cutoff = dates[int((len(dates)) * 0.8)]
-
-    train = df[df[flight_date_col] < cutoff] 
-    test = df[df[flight_date_col] >= cutoff]
-
-    return train, test
-
-def build_pipeline():
+def build_pipeline(model):
 
     preprocess = ColumnTransformer([("cat", OneHotEncoder(handle_unknown="ignore"), CATEGORICAL)], remainder="passthrough")
 
     pipeline = Pipeline([
     ("preprocess", preprocess),
-    ("model", RandomForestClassifier(**PARAMS)),
+    ("model", model),
 ])
     return pipeline
 
-def record_run(model_name, step, train, features, params, train_seconds, force=False):
+def record_run(model_name, step, train, validation, features, params, train_seconds, force=False):
      
     client = get_client()
 
@@ -93,42 +106,79 @@ def record_run(model_name, step, train, features, params, train_seconds, force=F
         "Train_Start": train["Flight_Date"].min().date(),
         "Train_End": train["Flight_Date"].max().date(),
         "Train_Rows": int(len(train)),
+        "Val_Start": validation["Flight_Date"].min().date(),
+        "Val_End": validation["Flight_Date"].max().date(),
+        "Val_Rows": int(len(validation)),
         "Features": json.dumps(sorted(features)),
         "Params": json.dumps(params, sort_keys=True),
         "Train_Seconds": float(train_seconds),
     }])
     client.insert_df("training_runs", run)
 
+
+def record_metrics(model_name, split, metrics):
+    client = get_client()
+
+    client.command("""
+        CREATE TABLE IF NOT EXISTS model_metrics (
+            Model_Name   String,
+            Split        String,
+            Metric       String,
+            Value        Float64,
+            Evaluated_At DateTime
+        )
+        ENGINE = MergeTree
+        ORDER BY (Model_Name, Split, Metric)
+    """)
+
+    client.command(
+        "ALTER TABLE model_metrics DELETE WHERE Model_Name = {m:String} AND Split = {s:String} SETTINGS mutations_sync = 1",
+        parameters={"m": model_name, "s": split},
+    )
+
+    rows = pd.DataFrame({
+        "Model_Name": model_name,
+        "Split": split,
+        "Metric": list(metrics.keys()),
+        "Value": list(metrics.values()),
+        "Evaluated_At": datetime.now(),
+    })
+    client.insert_df("model_metrics", rows)
+
+
      
 def main(): 
     df = load_data()
 
-    train, test = split_by_date(df, "Flight_Date")
+    train = select_period(df, train_start_for(YEARS), TRAIN_END)
+    validation = select_period (df, VAL_START, VAL_END)
 
-    X_train, y_train = train[FEATURES], train[TARGET_LABEL]
-    X_test, y_test = test[FEATURES], test[TARGET_LABEL]
+    X_train,y_train = train[FEATURES], train[TARGET_LABEL]
+    X_validation, y_validation = validation[FEATURES], validation[TARGET_LABEL]
 
-    pipeline = build_pipeline()
+    model = DummyClassifier(strategy="prior")
+    params = changed_params(model)
+    pipeline = build_pipeline(model)
 
     run_time_start = time.perf_counter()
     pipeline.fit(X_train, y_train)
     train_seconds = time.perf_counter() - run_time_start
 
-    proba = pipeline.predict_proba(X_test)[:,1]
+    proba = pipeline.predict_proba(X_validation)[:,1]
 
-    pr_auc = average_precision_score(y_test, proba)
-    baseline = y_test.mean()
+    pr_auc = average_precision_score(y_validation, proba)
+    baseline = y_validation.mean()
     print(f"PR-AUC: {pr_auc:.3f} | baseline: {baseline:.3f} | lift: {pr_auc / baseline:.2f}x")
     
     joblib.dump(pipeline, ARTIFACTS_DIR /  f"{MODEL_NAME}.joblib")
 
-    record_run(MODEL_NAME, "window", train, FEATURES, PARAMS, train_seconds)
+    record_run(MODEL_NAME, STEP , train, validation, FEATURES, params, train_seconds)
+    record_metrics(MODEL_NAME, SPLIT, {"pr_auc": pr_auc, "baseline_pr_auc": baseline})
 
 
 if __name__ == "__main__":
     main()
     
-
 
 
 

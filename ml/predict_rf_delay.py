@@ -1,15 +1,14 @@
 from pathlib import Path
 import joblib
-from train_rf_delay import load_data, split_by_date, FEATURES, TARGET_LABEL
-from datetime import datetime
+from train_rf_delay import load_data, select_period, get_client, TEST_START, TEST_END, FEATURES, TARGET_LABEL, MODEL_NAME
 import clickhouse_connect
 import os
 from sklearn.metrics import average_precision_score
 import pandas as pd
+from datetime import datetime
 
 ARTIFACTS_DIR = Path(__file__).parent / "artifacts"
-MODEL_PATH    = ARTIFACTS_DIR / "rf_delay_v1.joblib"
-MODEL_NAME = "rf_v1"
+MODEL_PATH    = ARTIFACTS_DIR / f"{MODEL_NAME}.joblib"
 
 
 def build_results (test, probability_predict):
@@ -25,13 +24,7 @@ def build_results (test, probability_predict):
 
 def write_predictions_into_table(model_name, results): 
 
-    client = clickhouse_connect.get_client(
-            host = "localhost",
-            port = 8123,
-            username = os.environ["CLICKHOUSE_USER"],
-            password = os.environ["CLICKHOUSE_PASSWORD"],
-            database = os.environ["CLICKHOUSE_DB"]
-        )
+    client = get_client()
 
     client.command("""
     CREATE TABLE IF NOT EXISTS predictions_delay (
@@ -57,13 +50,7 @@ def write_predictions_into_table(model_name, results):
     client.insert_df("predictions_delay", results)
 
 def write_metrics_into_table(model_name, baseline_probability, pr_auc):
-    client = clickhouse_connect.get_client(
-                host = "localhost",
-                port = 8123,
-                username = os.environ["CLICKHOUSE_USER"],
-                password = os.environ["CLICKHOUSE_PASSWORD"],
-                database = os.environ["CLICKHOUSE_DB"]
-            )
+    client = get_client()
 
     client.command("""
         CREATE TABLE IF NOT EXISTS model_metrics (
@@ -84,7 +71,7 @@ def write_metrics_into_table(model_name, baseline_probability, pr_auc):
         "Model_Name":   model_name,                          #
         "Metric":       ["pr_auc", "baseline_pr_auc"],
         "Value":        [pr_auc, baseline_probability],
-        "Evaluated_At": datetime.now(),
+        "Evaluated_At": datetime.now()
     })
 
     client.insert_df("model_metrics", metrics)
@@ -93,7 +80,7 @@ def main():
     pipeline = joblib.load(MODEL_PATH)
 
     df = load_data()
-    _, test = split_by_date(df,"Flight_Date")
+    test = select_period(df, TEST_START, TEST_END)
 
     X_test = test[FEATURES]
     y_test = test[TARGET_LABEL]
