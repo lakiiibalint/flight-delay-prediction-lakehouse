@@ -6,3 +6,11 @@ sources:
         meta:
           dagster:
             asset_key: ["run_collector"]
+  - name: ml
+    schema: flight_delays
+    tables:
+      - name: training_runs
+        meta:
+          dagster:
+            asset_key: ["run_rf_delay_train"]
+      - name: model_metrics
