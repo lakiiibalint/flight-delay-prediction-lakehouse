@@ -24,11 +24,10 @@ VAL_START, VAL_END   = "2024-08-01", "2025-07-31"
 TEST_START, TEST_END = "2025-08-01", "2026-07-31"
 YEARS = 1
 VERSION = 1
-STEP = "baseline"
-SPLIT = "validation"
+STEP = "curve"
 MODEL_NAME = f"rf_delay_y{YEARS}_v{VERSION}"
 FRACTIONS = {"12_5": 0.125, "25": 0.25, "50": 0.5, "100": 1.0}
-#RandomForestClassifier(**PARAMS)
+
 
 def get_client():
      client = clickhouse_connect.get_client(
@@ -145,35 +144,48 @@ def record_metrics(model_name, split, metrics):
     })
     client.insert_df("model_metrics", rows)
 
+def evaluate(pipeline, data):
+    X = data[FEATURES]
+    y = data[TARGET_LABEL]
+    proba = pipeline.predict_proba(X)[:,1]
+    pr_auc = average_precision_score(y, proba)
+    baseline = y.mean()
+    return {"pr_auc": pr_auc, "baseline_pr_auc": baseline}
 
-     
-def main(): 
+def run_train(model_name, step, model, train, validation):
+    params = changed_params(model)
+    pipeline = build_pipeline(model)
+
+    run_time_start = time.perf_counter()
+    pipeline.fit(train[FEATURES], train[TARGET_LABEL])
+    train_seconds = time.perf_counter() - run_time_start
+
+    train_metrics = evaluate(pipeline, train)
+    val_metrics = evaluate(pipeline, validation)
+    print(
+        f"{model_name} | rows: {len(train)} | "
+        f"train PR-AUC: {train_metrics['pr_auc']:.3f} | "
+        f"val PR-AUC: {val_metrics['pr_auc']:.3f} "
+        f"(baseline {val_metrics['baseline_pr_auc']:.3f}) | "
+        f"{train_seconds:.1f}s"
+    )
+
+    joblib.dump(pipeline, ARTIFACTS_DIR / f"{model_name}.joblib")
+
+    record_run(model_name, step, train, validation, FEATURES, params, train_seconds)
+    record_metrics(model_name, "train", train_metrics)
+    record_metrics(model_name, "validation", val_metrics)
+
+def main():
     df = load_data()
 
     train = select_period(df, train_start_for(YEARS), TRAIN_END)
     validation = select_period (df, VAL_START, VAL_END)
 
-    X_train,y_train = train[FEATURES], train[TARGET_LABEL]
-    X_validation, y_validation = validation[FEATURES], validation[TARGET_LABEL]
-
-    model = DummyClassifier(strategy="prior")
-    params = changed_params(model)
-    pipeline = build_pipeline(model)
-
-    run_time_start = time.perf_counter()
-    pipeline.fit(X_train, y_train)
-    train_seconds = time.perf_counter() - run_time_start
-
-    proba = pipeline.predict_proba(X_validation)[:,1]
-
-    pr_auc = average_precision_score(y_validation, proba)
-    baseline = y_validation.mean()
-    print(f"PR-AUC: {pr_auc:.3f} | baseline: {baseline:.3f} | lift: {pr_auc / baseline:.2f}x")
-    
-    joblib.dump(pipeline, ARTIFACTS_DIR /  f"{MODEL_NAME}.joblib")
-
-    record_run(MODEL_NAME, STEP , train, validation, FEATURES, params, train_seconds)
-    record_metrics(MODEL_NAME, SPLIT, {"pr_auc": pr_auc, "baseline_pr_auc": baseline})
+    for key, fraction in FRACTIONS.items():
+        subset = train.sample(frac=fraction, random_state=PARAMS["random_state"]).sort_index()
+        model = RandomForestClassifier(**PARAMS)
+        run_train(f"rf_delay_y{YEARS}_f{key}_v{VERSION}", STEP, model, subset, validation)
 
 
 if __name__ == "__main__":
