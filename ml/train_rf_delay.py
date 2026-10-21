@@ -23,10 +23,9 @@ TRAIN_END = "2024-07-31"
 VAL_START, VAL_END   = "2024-08-01", "2025-07-31"
 TEST_START, TEST_END = "2025-08-01", "2026-07-31"
 YEARS = 1
-VERSION = 1
-STEP = "curve"
-MODEL_NAME = f"rf_delay_y{YEARS}_v{VERSION}"
-FRACTIONS = {"12_5": 0.125, "25": 0.25, "50": 0.5, "100": 1.0}
+TAG = "t20_loose"
+STEP = "feature"
+FRACTIONS = {"25": 0.25}
 
 
 def get_client():
@@ -152,24 +151,25 @@ def evaluate(pipeline, data):
     baseline = y.mean()
     return {"pr_auc": pr_auc, "baseline_pr_auc": baseline}
 
-def run_train(model_name, step, model, train, validation):
-    params = changed_params(model)
+def fit_model(model, train):
     pipeline = build_pipeline(model)
 
     run_time_start = time.perf_counter()
     pipeline.fit(train[FEATURES], train[TARGET_LABEL])
     train_seconds = time.perf_counter() - run_time_start
 
-    train_metrics = evaluate(pipeline, train)
-    val_metrics = evaluate(pipeline, validation)
+    return pipeline, train_seconds
+
+def report(model_name, n_rows, train_metrics, val_metrics, train_seconds):
     print(
-        f"{model_name} | rows: {len(train)} | "
+        f"{model_name} | rows: {n_rows} | "
         f"train PR-AUC: {train_metrics['pr_auc']:.3f} | "
         f"val PR-AUC: {val_metrics['pr_auc']:.3f} "
         f"(baseline {val_metrics['baseline_pr_auc']:.3f}) | "
         f"{train_seconds:.1f}s"
     )
 
+def persist(model_name, step, pipeline, train, validation, params, train_seconds, train_metrics, val_metrics):
     joblib.dump(pipeline, ARTIFACTS_DIR / f"{model_name}.joblib")
 
     record_run(model_name, step, train, validation, FEATURES, params, train_seconds)
@@ -184,8 +184,16 @@ def main():
 
     for key, fraction in FRACTIONS.items():
         subset = train.sample(frac=fraction, random_state=PARAMS["random_state"]).sort_index()
+        model_name = f"rf_delay_y{YEARS}_f{key}_{TAG}"
         model = RandomForestClassifier(**PARAMS)
-        run_train(f"rf_delay_y{YEARS}_f{key}_v{VERSION}", STEP, model, subset, validation)
+        params = changed_params(model)
+
+        pipeline, train_seconds = fit_model(model, subset)
+        train_metrics = evaluate(pipeline, subset)
+        val_metrics = evaluate(pipeline, validation)
+
+        report(model_name, len(subset), train_metrics, val_metrics, train_seconds)
+        persist(model_name, STEP, pipeline, subset, validation, params, train_seconds, train_metrics, val_metrics)
 
 
 if __name__ == "__main__":
