@@ -3,7 +3,8 @@ WITH metrics AS (
         Model_Name,
         maxIf(Value, Split = 'validation' AND Metric = 'pr_auc')          AS val_pr_auc,
         maxIf(Value, Split = 'train'      AND Metric = 'pr_auc')          AS train_pr_auc,
-        maxIf(Value, Split = 'validation' AND Metric = 'baseline_pr_auc') AS baseline_pr_auc
+        maxIf(Value, Split = 'validation' AND Metric = 'baseline_pr_auc') AS val_baseline_pr_auc,
+        maxIf(Value, Split = 'train' AND Metric = 'baseline_pr_auc')      AS train_baseline_pr_auc
      FROM {{ source('ml', 'model_metrics') }}
     GROUP BY Model_Name
 )
@@ -17,10 +18,11 @@ SELECT
     tr.Train_Rows       AS Train_Rows,
     tr.Train_Seconds    AS Train_Seconds,
     tr.Features         AS Features,
-    tr.Params           AS Params,
-    m.val_pr_auc       AS val_pr_auc,
+    tr.Params         AS Params,
+    m.val_pr_auc       AS val_pr_auc,  
     m.train_pr_auc     AS train_pr_auc,
-    m.baseline_pr_auc  AS baseline_pr_auc,
-    m.val_pr_auc / m.baseline_pr_auc AS lift
+    m.val_baseline_pr_auc  AS val_baseline_pr_auc,
+    m.val_pr_auc / m.val_baseline_pr_auc AS val_lift,   
+    m.train_pr_auc / m.train_baseline_pr_auc AS train_lift   
 FROM {{ source('ml', 'training_runs') }} tr
 INNER JOIN metrics AS m ON tr.Model_Name = m.Model_Name
