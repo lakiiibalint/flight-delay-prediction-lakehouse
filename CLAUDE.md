@@ -10,7 +10,7 @@ Bachelor's thesis: a containerized, lakehouse-oriented data platform predicting 
 
 - Default mode is **plan**: explain and pseudocode, don't write real code.
 - Only write actual code when the message explicitly says **"implement this"**. Phrases like "let's build X" or "can you set up Y" stay at plan/pseudocode level unless the thing being asked for is scaffolding (below).
-- Core logic is written by Bálint personally, for learning: dbt SQL, Dagster ops/assets, feature engineering, the ML pipeline. Don't write these even if asked to "help" — explain the approach, flag what to watch for, review what's written. "Implement this" doesn't override this category — it applies to scaffolding.
+- Core logic is written by Bálint personally, for learning: dbt SQL, Dagster ops/assets, feature engineering, the ML pipeline. Don't write these even if asked to "help" — explain the approach, flag what to watch for, review what's written. An explicit "implement this" (or equivalent direct instruction to write it) does override this category — Bálint decides per request; without it, stay at explain/review.
 - Scaffolding can be generated freely, no trigger phrase needed: Dockerfiles, docker-compose.yml, pyproject.toml, config files (dbt_project.yml, profiles.yml, Dagster definitions.py boilerplate), project layout, this file.
 
 ## Build philosophy
