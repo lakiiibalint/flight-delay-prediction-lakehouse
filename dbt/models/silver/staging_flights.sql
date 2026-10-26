@@ -10,5 +10,6 @@ SELECT
     Dest AS Destination_Airport,
     toFloat32OrNull(DepDelay) AS Departure_Delay,
     toUInt8(toFloat32(Cancelled)) AS Is_Flight_Cancelled,
-    toUInt16OrNull(CRSDepTime) AS Scheduled_Departure_Time
+    toUInt16OrNull(CRSDepTime) AS Scheduled_Departure_Time,
+    toUInt8OrNull(DayOfWeek) As Weekday_Of_Departure
 FROM raw_flights

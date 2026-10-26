@@ -40,6 +40,14 @@ models:
         data_tests:
           - not_null
 
+      - name: Weekday_Of_Departure
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5, 6, 7]
+                quote: false
+
   - name: cleaned_flights
     columns:
 

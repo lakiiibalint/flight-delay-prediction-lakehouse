@@ -110,8 +110,9 @@ def collect_month(year, month, force=False):
     print(f"{year}-{month:02d} loaded")
 
 def main():
-    for year, month in [(2026, 6), (2026, 7)]:
-        collect_month(year, month)
-
+        for year, month in [
+        (2023, 8)
+    ]:
+         collect_month(year, month)
 if __name__ == "__main__":
     main()
