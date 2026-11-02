@@ -23,6 +23,7 @@ SELECT
     m.train_pr_auc     AS train_pr_auc,
     m.val_baseline_pr_auc  AS val_baseline_pr_auc,
     m.val_pr_auc / m.val_baseline_pr_auc AS val_lift,   
-    m.train_pr_auc / m.train_baseline_pr_auc AS train_lift   
+    m.train_pr_auc / m.train_baseline_pr_auc AS train_lift,
+    tr.Trained_At       AS Trained_At 
 FROM {{ source('ml', 'training_runs') }} tr
 INNER JOIN metrics AS m ON tr.Model_Name = m.Model_Name
