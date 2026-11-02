@@ -11,5 +11,6 @@ SELECT
     Departure_Delay,
     Is_Flight_Cancelled,
     intDiv(Scheduled_Departure_Time, 100) % 24 AS Hour_Of_Departure,
-    Weekday_Of_Departure
+    Weekday_Of_Departure,
+    Distance_Miles
 FROM {{ref("staging_flights")}}

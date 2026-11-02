@@ -13,7 +13,10 @@ from datetime import datetime
 import json
 import time
 
-FEATURES = ["Reporting_Airline", "Origin_Airport", "Destination_Airport", "Hour_Of_Departure", "Weekday_Of_Departure", "Month_Of_Departure", "Departures_In_Hour"] 
+FEATURES = ["Reporting_Airline", "Origin_Airport", 
+            "Destination_Airport", "Hour_Of_Departure",
+              "Weekday_Of_Departure", "Month_Of_Departure",
+                "Departures_In_Hour"] 
 TARGET_LABEL = "Is_Dep_Delay_Greater_Than_15"
 PARAMS = {"random_state" : 43, "n_jobs" :-1, "n_estimators" :100, "max_depth" : 15, "min_samples_leaf" : 50}
 CATEGORICAL = ["Reporting_Airline", "Origin_Airport", "Destination_Airport"]
@@ -23,7 +26,7 @@ TRAIN_END = "2024-07-31"
 VAL_START, VAL_END   = "2024-08-01", "2025-07-31"
 TEST_START, TEST_END = "2025-08-01", "2026-07-31"
 YEARS = 1
-TAG = "traffic_hour_rs43"
+TAG = ""
 STEP = "features"
 FRACTIONS = {"25": 0.25}
 
