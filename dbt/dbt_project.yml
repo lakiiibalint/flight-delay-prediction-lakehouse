@@ -15,3 +15,10 @@ models:
     gold:
       +tags: ["gold"]
       +materialized: table
+
+seeds:
+  flight_delays:
+    us_holidays:
+      +column_types:
+        holiday_date: Date
+        holiday_name: String

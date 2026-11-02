@@ -59,3 +59,15 @@ models:
         data_tests:
           - not_null
           - unique
+          
+  - name: dim_calendar
+    columns:
+      - name: Flight_Date
+        data_tests: [unique, not_null]
+      - name: Days_To_Nearest_Holiday
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 60

@@ -32,4 +32,23 @@ models:
           - dbt_utils.accepted_range:
               arguments:
                 min_value: 1
+    
+      - name: Days_To_Nearest_Holiday
+        data_tests:
+          - not_null
+
+      - name: Flight_Date
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_calendar')
+                field: Flight_Date
+      
+      - name: Distance_Miles
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 6000
       
