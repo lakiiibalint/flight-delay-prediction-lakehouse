@@ -18,7 +18,7 @@ FEATURES = ["Reporting_Airline", "Origin_Airport",
               "Weekday_Of_Departure", "Month_Of_Departure",
                 "Departures_In_Hour"] 
 TARGET_LABEL = "Is_Dep_Delay_Greater_Than_15"
-PARAMS = {"random_state" : 43, "n_jobs" :-1, "n_estimators" :100, "max_depth" : 15, "min_samples_leaf" : 50}
+PARAMS = {"random_state" : 42, "n_jobs" :-1, "n_estimators" :100, "max_depth" : 15, "min_samples_leaf" : 50}
 CATEGORICAL = ["Reporting_Airline", "Origin_Airport", "Destination_Airport"]
 # Constants for running a model
 ARTIFACTS_DIR = Path(__file__).parent / "artifacts"
@@ -26,9 +26,9 @@ TRAIN_END = "2024-07-31"
 VAL_START, VAL_END   = "2024-08-01", "2025-07-31"
 TEST_START, TEST_END = "2025-08-01", "2026-07-31"
 YEARS = 1
-TAG = ""
-STEP = "features"
-FRACTIONS = {"25": 0.25}
+TAG = "7_features"
+STEP = "curve"
+FRACTIONS = FRACTIONS = {"100": 1.0}
 
 
 def get_client():
@@ -58,7 +58,9 @@ def select_period(df, start, end):
 def load_data(): 
     client = get_client()
 
-    df = client.query_df("SELECT * FROM features_delay")
+    columns = ["Flight_Date", TARGET_LABEL] + FEATURES
+
+    df = client.query_df(f"SELECT {', '.join(columns)} FROM features_delay")
 
     return df
 
