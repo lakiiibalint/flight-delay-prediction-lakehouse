@@ -18,7 +18,7 @@ FEATURES = ["Reporting_Airline", "Origin_Airport",
               "Weekday_Of_Departure", "Month_Of_Departure",
                 "Departures_In_Hour"] 
 TARGET_LABEL = "Is_Dep_Delay_Greater_Than_15"
-PARAMS = {"random_state" : 42, "n_jobs" :-1, "n_estimators" :100, "max_depth" : 15, "min_samples_leaf" : 50}
+PARAMS = {"random_state" : 42, "n_jobs" :-1, "n_estimators" :100, "max_depth" : 25, "min_samples_leaf" : 50, "max_features" : 0.3}
 CATEGORICAL = ["Reporting_Airline", "Origin_Airport", "Destination_Airport"]
 # Constants for running a model
 ARTIFACTS_DIR = Path(__file__).parent / "artifacts"
@@ -26,9 +26,9 @@ TRAIN_END = "2024-07-31"
 VAL_START, VAL_END   = "2024-08-01", "2025-07-31"
 TEST_START, TEST_END = "2025-08-01", "2026-07-31"
 YEARS = 1
-TAG = "7_features"
-STEP = "curve"
-FRACTIONS = FRACTIONS = {"100": 1.0}
+TAG = "mf0.3_depth_25"
+STEP = "tuning"
+FRACTIONS = {"25": 0.25}
 
 
 def get_client():
@@ -55,14 +55,15 @@ def select_period(df, start, end):
     in_period = (df["Flight_Date"] >= start) & (df["Flight_Date"] <= end)
     return df[in_period]
 
-def load_data(): 
+def load_data():
     client = get_client()
 
     columns = ["Flight_Date", TARGET_LABEL] + FEATURES
+    start = train_start_for(YEARS).date()
+    query = (f"SELECT {', '.join(columns)} FROM features_delay "
+             f"WHERE Flight_Date BETWEEN '{start}' AND '{VAL_END}'")
 
-    df = client.query_df(f"SELECT {', '.join(columns)} FROM features_delay")
-
-    return df
+    return client.query_df(query)
 
 def build_pipeline(model):
 
