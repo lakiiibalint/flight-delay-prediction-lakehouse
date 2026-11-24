@@ -1,6 +1,7 @@
 from pathlib import Path
 import joblib
-from train_rf_delay import load_data, select_period, get_client, TEST_START, TEST_END, FEATURES, TARGET_LABEL, MODEL_NAME
+from common import load_data, select_period, get_client, TEST_START, TEST_END, FEATURES, TARGET_LABEL
+from train_rf_delay import MODEL_NAME
 import clickhouse_connect
 import os
 from sklearn.metrics import average_precision_score
