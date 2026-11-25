@@ -147,8 +147,8 @@ def evaluate(pipeline, data):
     baseline = y.mean()
     return {"pr_auc": pr_auc, "baseline_pr_auc": baseline}
 
-def fit_model(model, train):
-    pipeline = build_pipeline(model)
+def fit_model(model, train, preprocess):
+    pipeline = build_pipeline(model, preprocess)
 
     run_time_start = time.perf_counter()
     pipeline.fit(train[FEATURES], train[TARGET_LABEL])
