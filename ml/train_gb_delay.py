@@ -10,12 +10,12 @@ import numpy as np
 
 CAT_MASK = [True] * len(CATEGORICAL) + [False] * (len(FEATURES) - len(CATEGORICAL))
 
-PARAMS = {"random_state": 42, "learning_rate": 0.1, "max_iter": 100, "max_leaf_nodes": 31, 
+PARAMS = {"random_state": 42, "learning_rate": 0.1, "max_iter": 180, "max_leaf_nodes": 15, 
           "min_samples_leaf": 20, "early_stopping": False, "categorical_features" : CAT_MASK}
 YEARS = 1
-TAG = "curve_default"
-STEP = "curve"
-FRACTIONS = {"12.5": 0.125, "25": 0.25, "50": 0.5, "100": 1.0}
+TAG = "final_gb"
+STEP = "tuning"
+FRACTIONS = {"25": 0.25}
 
 
 def main():
