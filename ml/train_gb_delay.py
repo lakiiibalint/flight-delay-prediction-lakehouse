@@ -13,9 +13,9 @@ CAT_MASK = [True] * len(CATEGORICAL) + [False] * (len(FEATURES) - len(CATEGORICA
 PARAMS = {"random_state": 42, "learning_rate": 0.1, "max_iter": 100, "max_leaf_nodes": 31, 
           "min_samples_leaf": 20, "early_stopping": False, "categorical_features" : CAT_MASK}
 YEARS = 1
-TAG = "default"
-STEP = "compare"
-FRACTIONS = {"25": 0.25}
+TAG = "curve_default"
+STEP = "curve"
+FRACTIONS = {"12.5": 0.125, "25": 0.25, "50": 0.5, "100": 1.0}
 
 
 def main():
